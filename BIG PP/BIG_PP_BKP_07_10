@@ -1,0 +1,3156 @@
+C:\Users\luiss\PycharmProjects\NAPALM\venv\Scripts\python.exe C:/Users/luiss/PycharmProjects/NAPALM/NETMIKO.py
+||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||CONNECTING TO 172.19.254.254||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+configure terminal
+Enter configuration commands, one per line.  End with CNTL/Z.
+INTERNET(config)#do sh run
+Building configuration...
+
+  
+Current configuration : 4198 bytes
+!
+! Last configuration change at 23:59:36 UTC Thu Oct 7 2021 by dudu
+!
+version 15.6
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname INTERNET
+!
+boot-start-marker
+boot-end-marker
+!
+!
+vrf definition MGMT
+ rd 55:55
+ !
+ address-family ipv4
+ exit-address-family
+!
+!
+no aaa new-model
+ethernet lmi ce
+!
+!
+!
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+ip domain name dududaddy.edu
+ip cef
+no ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+username dudu privilege 15 secret 5 $1$gk0F$WQ5WweYLoWQKUXgRR4PDm1
+!
+redundancy
+!
+!
+track 11 ip sla 11 reachability
+ delay down 8 up 10
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ vrf forwarding MGMT
+ ip address 172.19.254.254 255.255.255.255
+!
+interface GigabitEthernet0/0
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/0.254
+ description MGMT TRANSPORT
+ encapsulation dot1Q 254
+ vrf forwarding MGMT
+ ip address 192.168.254.254 255.255.255.192
+!
+interface GigabitEthernet0/1
+ vrf forwarding MGMT
+ ip address 192.168.2.254 255.255.255.0
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/2
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/3
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+router ospf 200 vrf MGMT
+ network 172.19.254.254 0.0.0.0 area 0
+ network 192.168.2.0 0.0.0.255 area 0
+ network 192.168.254.0 0.0.0.255 area 0
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+ip route vrf MGMT 0.0.0.0 0.0.0.0 192.168.2.1
+!
+ip sla 11
+ icmp-echo 4.4.4.4 source-interface GigabitEthernet0/0
+ip sla schedule 11 life forever start-time now
+ip sla reaction-configuration 11 react timeout threshold-type immediate
+ip sla enable reaction-alerts
+!
+!
+!
+control-plane
+!
+banner exec ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner incoming ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner login ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+!
+line con 0
+line aux 0
+line vty 0 4
+ login local
+ transport input all
+line vty 5 15
+ login local
+ transport input all
+!
+no scheduler allocate
+event manager applet shut_int
+ event ipsla operation-id 11 reaction-type timeout
+ action 1.0 if $_ipsla_condition eq "Occurred"
+ action 1.1  cli command "enable"
+ action 1.2  cli command "conf t"
+ action 1.3  cli command "interface range gi0/0-3"
+ action 1.4  cli command "no shut"
+ action 1.5  syslog msg "End of EEM"
+ action 1.6 end
+!
+end
+
+INTERNET(config)#end
+INTERNET#
+
+
+||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||CONNECTING TO 172.19.1.1||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+configure terminal
+Enter configuration commands, one per line.  End with CNTL/Z.
+ISP1(config)#do sh run
+Building configuration...
+
+  
+Current configuration : 5684 bytes
+!
+! Last configuration change at 23:59:26 UTC Thu Oct 7 2021 by dudu
+!
+version 15.6
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname ISP1
+!
+boot-start-marker
+boot-end-marker
+!
+!
+vrf definition CLIENT
+ rd 10:10
+ route-target export 10:10
+ route-target export 101:101
+ route-target import 10:10
+ route-target import 102:102
+ !
+ address-family ipv4
+ exit-address-family
+!
+vrf definition MGMT
+ rd 55:55
+ !
+ address-family ipv4
+ exit-address-family
+!
+vrf definition PROVIDER
+ rd 100:100
+ route-target export 100:100
+ route-target export 102:102
+ route-target import 100:100
+ route-target import 101:101
+ !
+ address-family ipv4
+ exit-address-family
+!
+!
+no aaa new-model
+ethernet lmi ce
+!
+!
+!
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+!
+!
+!
+ip vrf ISP
+ rd 3:3
+!
+!
+!
+!
+no ip domain lookup
+ip domain name dududaddy.edu
+ip cef
+no ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+username dudu privilege 15 secret 5 $1$q0Aw$YOtsMMAXcV2p73Wp8BXlX0
+!
+redundancy
+!
+!
+track 11 ip sla 11 reachability
+ delay down 8 up 10
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ vrf forwarding MGMT
+ ip address 172.19.1.1 255.255.255.255
+!
+interface GigabitEthernet0/0
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/0.150
+ encapsulation dot1Q 150
+ vrf forwarding PROVIDER
+ ip address 192.168.150.1 255.255.255.0
+!
+interface GigabitEthernet0/0.254
+ encapsulation dot1Q 254
+ vrf forwarding MGMT
+ ip address 192.168.254.193 255.255.255.192
+!
+interface GigabitEthernet0/1
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/1.200
+ description ===Branches===
+ encapsulation dot1Q 200
+ vrf forwarding CLIENT
+ ip address 192.168.200.1 255.255.255.248
+!
+interface GigabitEthernet0/1.354
+ encapsulation dot1Q 354
+ vrf forwarding MGMT
+ ip address 192.168.254.1 255.255.255.248
+!
+interface GigabitEthernet0/2
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/3
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+!
+router eigrp 100
+ !
+ address-family ipv4 vrf MGMT autonomous-system 100
+  network 172.19.1.1 0.0.0.0
+  network 192.168.254.0
+ exit-address-family
+!
+router ospf 200 vrf MGMT
+ area 1 stub
+ network 172.19.1.1 0.0.0.0 area 0
+ network 192.168.254.0 0.0.0.7 area 1
+ network 192.168.254.0 0.0.0.255 area 0
+!
+router bgp 3000
+ bgp router-id 172.19.1.1
+ bgp log-neighbor-changes
+ !
+ address-family ipv4 vrf CLIENT
+  redistribute connected
+  neighbor 192.168.200.2 remote-as 2000
+  neighbor 192.168.200.2 activate
+  neighbor 192.168.200.3 remote-as 2000
+  neighbor 192.168.200.3 activate
+ exit-address-family
+ !
+ address-family ipv4 vrf PROVIDER
+  redistribute connected
+  neighbor 192.168.150.2 remote-as 3000
+  neighbor 192.168.150.2 activate
+  neighbor 192.168.150.3 remote-as 3000
+  neighbor 192.168.150.3 activate
+ exit-address-family
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+ip ssh version 2
+!
+ip access-list standard FILTER-PREFIX
+ deny   192.168.150.0 0.0.0.255 log
+!
+ip sla 11
+ icmp-echo 4.4.4.4 source-interface GigabitEthernet0/0
+ip sla schedule 11 life forever start-time now
+ip sla reaction-configuration 11 react timeout threshold-type immediate
+ip sla enable reaction-alerts
+!
+!
+!
+control-plane
+!
+banner exec ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner incoming ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner login ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+!
+line con 0
+line aux 0
+line vty 0 4
+ login local
+ transport input all
+line vty 5 15
+ login local
+ transport input all
+!
+no scheduler allocate
+event manager applet shut_int
+ event ipsla operation-id 11 reaction-type timeout
+ action 1.0 if $_ipsla_condition eq "Occurred"
+ action 1.1  cli command "enable"
+ action 1.2  cli command "conf t"
+ action 1.3  cli command "interface range gi0/0-3"
+ action 1.4  cli command "no shut"
+ action 1.5  syslog msg "End of EEM"
+ action 1.6 end
+!
+end
+
+ISP1(config)#end
+ISP1#
+
+
+||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||CONNECTING TO 172.19.2.2||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+configure terminal
+Enter configuration commands, one per line.  End with CNTL/Z.
+ISP2(config)#do sh run
+Building configuration...
+
+  
+Current configuration : 5249 bytes
+!
+! Last configuration change at 23:59:42 UTC Thu Oct 7 2021 by dudu
+!
+version 15.6
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname ISP2
+!
+boot-start-marker
+boot-end-marker
+!
+!
+vrf definition CLIENT
+ rd 10:10
+ route-target export 101:101
+ route-target import 102:102
+ !
+ address-family ipv4
+ exit-address-family
+!
+vrf definition MGMT
+ rd 55:55
+ !
+ address-family ipv4
+ exit-address-family
+!
+vrf definition PROVIDER
+ rd 100:100
+ route-target export 102:102
+ route-target import 101:101
+ !
+ address-family ipv4
+ exit-address-family
+!
+!
+no aaa new-model
+ethernet lmi ce
+!
+!
+!
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+no ip domain lookup
+ip domain name dududaddy.edu
+ip cef
+no ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+username dudu privilege 15 secret 5 $1$/FnZ$lBcQeCOIFxCkTlAwz3hoO0
+!
+redundancy
+!
+!
+track 11 ip sla 11 reachability
+ delay down 8 up 10
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ vrf forwarding MGMT
+ ip address 172.19.2.2 255.255.255.255
+!
+interface GigabitEthernet0/0
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/0.150
+ encapsulation dot1Q 150
+ vrf forwarding PROVIDER
+ ip address 192.168.150.2 255.255.255.0
+!
+interface GigabitEthernet0/0.254
+ encapsulation dot1Q 254
+ vrf forwarding MGMT
+ ip address 192.168.254.194 255.255.255.192
+!
+interface GigabitEthernet0/1
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/1.200
+ description ===Branches===
+ encapsulation dot1Q 200
+ vrf forwarding CLIENT
+ ip address 192.168.200.9 255.255.255.252
+!
+interface GigabitEthernet0/1.354
+ encapsulation dot1Q 354
+ vrf forwarding MGMT
+ ip address 192.168.254.25 255.255.255.252
+!
+interface GigabitEthernet0/2
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/3
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+router ospf 200 vrf MGMT
+ area 2 stub no-summary
+ network 172.19.2.2 0.0.0.0 area 0
+ network 192.168.254.24 0.0.0.3 area 2
+ network 192.168.254.0 0.0.0.255 area 0
+!
+router bgp 3000
+ bgp router-id 172.19.2.2
+ bgp log-neighbor-changes
+ !
+ address-family ipv4 vrf CLIENT
+  redistribute connected
+  neighbor 192.168.200.10 remote-as 2000
+  neighbor 192.168.200.10 activate
+ exit-address-family
+ !
+ address-family ipv4 vrf PROVIDER
+  redistribute connected
+  neighbor 192.168.150.1 remote-as 3000
+  neighbor 192.168.150.1 activate
+  neighbor 192.168.150.3 remote-as 3000
+  neighbor 192.168.150.3 activate
+ exit-address-family
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+!
+ip sla 11
+ icmp-echo 4.4.4.4 source-interface GigabitEthernet0/0
+ip sla schedule 11 life forever start-time now
+ip sla reaction-configuration 11 react timeout threshold-type immediate
+ip sla enable reaction-alerts
+!
+!
+!
+control-plane
+!
+banner exec ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner incoming ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner login ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+!
+line con 0
+line aux 0
+line vty 0 4
+ login local
+ transport input all
+line vty 5 15
+ login local
+ transport input all
+!
+no scheduler allocate
+event manager applet shut_int
+ event ipsla operation-id 11 reaction-type timeout
+ action 1.0 if $_ipsla_condition eq "Occurred"
+ action 1.1  cli command "enable"
+ action 1.2  cli command "conf t"
+ action 1.3  cli command "interface range gi0/0-3"
+ action 1.4  cli command "no shut"
+ action 1.5  syslog msg "End of EEM"
+ action 1.6 end
+!
+end
+
+ISP2(config)#end
+ISP2#
+
+
+||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||CONNECTING TO 172.19.3.3||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+configure terminal
+Enter configuration commands, one per line.  End with CNTL/Z.
+ISP3(config)#do sh run
+Building configuration...
+
+  
+Current configuration : 5482 bytes
+!
+! Last configuration change at 23:59:40 UTC Thu Oct 7 2021 by dudu
+!
+version 15.6
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname ISP3
+!
+boot-start-marker
+boot-end-marker
+!
+!
+vrf definition CLIENT
+ rd 10:10
+ route-target export 10:10
+ route-target export 101:101
+ route-target import 10:10
+ route-target import 102:102
+ !
+ address-family ipv4
+ exit-address-family
+!
+vrf definition MGMT
+ rd 55:55
+ !
+ address-family ipv4
+ exit-address-family
+!
+vrf definition PROVIDER
+ rd 100:100
+ route-target export 100:100
+ route-target export 102:102
+ route-target import 100:100
+ route-target import 101:101
+ !
+ address-family ipv4
+ exit-address-family
+!
+!
+no aaa new-model
+ethernet lmi ce
+!
+!
+!
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+no ip domain lookup
+ip domain name dududaddy.edu
+ip cef
+no ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+username dudu privilege 15 secret 5 $1$djzo$xj9rH0fP.Fh6Pz/u1A76d1
+!
+redundancy
+!
+!
+track 11 ip sla 11 reachability
+ delay down 8 up 10
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ vrf forwarding MGMT
+ ip address 172.19.3.3 255.255.255.255
+!
+interface GigabitEthernet0/0
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/0.150
+ encapsulation dot1Q 150
+ vrf forwarding PROVIDER
+ ip address 192.168.150.3 255.255.255.0
+!
+interface GigabitEthernet0/0.254
+ encapsulation dot1Q 254
+ vrf forwarding MGMT
+ ip address 192.168.254.195 255.255.255.192
+!
+interface GigabitEthernet0/1
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/1.200
+ description ===Branches===
+ encapsulation dot1Q 200
+ vrf forwarding CLIENT
+ ip address 192.168.200.100 255.255.255.248
+!
+interface GigabitEthernet0/1.354
+ encapsulation dot1Q 354
+ vrf forwarding MGMT
+ ip address 192.168.254.9 255.255.255.248
+!
+interface GigabitEthernet0/2
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/3
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+router ospf 200 vrf MGMT
+ area 51 nssa default-information-originate
+ network 172.19.3.3 0.0.0.0 area 0
+ network 192.168.254.8 0.0.0.7 area 51
+ network 192.168.254.0 0.0.0.255 area 0
+!
+router bgp 3000
+ bgp router-id 172.19.3.3
+ bgp log-neighbor-changes
+ !
+ address-family ipv4 vrf CLIENT
+  network 192.168.200.96 mask 255.255.255.248
+  neighbor 192.168.200.101 remote-as 2000
+  neighbor 192.168.200.101 activate
+  neighbor 192.168.200.102 remote-as 2000
+  neighbor 192.168.200.102 activate
+ exit-address-family
+ !
+ address-family ipv4 vrf PROVIDER
+  network 192.168.150.0
+  neighbor 192.168.150.1 remote-as 3000
+  neighbor 192.168.150.1 activate
+  neighbor 192.168.150.2 remote-as 3000
+  neighbor 192.168.150.2 activate
+ exit-address-family
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+!
+ip sla 11
+ icmp-echo 4.4.4.4 source-interface GigabitEthernet0/0
+ip sla schedule 11 life forever start-time now
+ip sla reaction-configuration 11 react timeout threshold-type immediate
+ip sla enable reaction-alerts
+!
+!
+!
+control-plane
+!
+banner exec ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner incoming ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner login ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+!
+line con 0
+line aux 0
+line vty 0 4
+ login local
+ transport input all
+line vty 5 15
+ login local
+ transport input all
+!
+no scheduler allocate
+event manager applet shut_int
+ event ipsla operation-id 11 reaction-type timeout
+ action 1.0 if $_ipsla_condition eq "Occurred"
+ action 1.1  cli command "enable"
+ action 1.2  cli command "conf t"
+ action 1.3  cli command "interface range gi0/0-3"
+ action 1.4  cli command "no shut"
+ action 1.5  syslog msg "End of EEM"
+ action 1.6 end
+!
+end
+
+ISP3(config)#end
+ISP3#
+
+
+||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||CONNECTING TO 172.19.4.4||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+configure terminal
+Enter configuration commands, one per line.  End with CNTL/Z.
+ISP4(config)#do sh run
+Building configuration...
+
+  
+Current configuration : 4395 bytes
+!
+! Last configuration change at 23:59:36 UTC Thu Oct 7 2021 by dudu
+!
+version 15.6
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname ISP4
+!
+boot-start-marker
+boot-end-marker
+!
+!
+vrf definition MGMT
+ rd 55:55
+ !
+ address-family ipv4
+ exit-address-family
+!
+!
+no aaa new-model
+ethernet lmi ce
+!
+!
+!
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+ip domain name dududaddy.edu
+ip cef
+no ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+username dudu privilege 15 secret 5 $1$5RV5$LzaXGWCmHYLROgNwlbrg/0
+!
+redundancy
+!
+!
+track 11 ip sla 11 reachability
+ delay down 8 up 10
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ vrf forwarding MGMT
+ ip address 172.19.4.4 255.255.255.255
+!
+interface GigabitEthernet0/0
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/0.254
+ encapsulation dot1Q 254
+ vrf forwarding MGMT
+ ip address 192.168.254.196 255.255.255.192
+!
+interface GigabitEthernet0/1
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/1.354
+ encapsulation dot1Q 354
+ vrf forwarding MGMT
+ ip address 192.168.254.17 255.255.255.248
+!
+interface GigabitEthernet0/2
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/3
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/4
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/5
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+router ospf 200 vrf MGMT
+ area 102 nssa no-summary
+ network 172.19.4.4 0.0.0.0 area 0
+ network 192.168.254.16 0.0.0.7 area 102
+ network 192.168.254.0 0.0.0.255 area 0
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+!
+ip sla 11
+ icmp-echo 4.4.4.4 source-interface GigabitEthernet0/0
+ip sla schedule 11 life forever start-time now
+ip sla reaction-configuration 11 react timeout threshold-type immediate
+ip sla enable reaction-alerts
+!
+!
+!
+control-plane
+!
+banner exec ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner incoming ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner login ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+!
+line con 0
+line aux 0
+line vty 0 4
+ login local
+ transport input all
+line vty 5 15
+ login local
+ transport input all
+!
+no scheduler allocate
+event manager applet shut_int
+ event ipsla operation-id 11 reaction-type timeout
+ action 1.0 if $_ipsla_condition eq "Occurred"
+ action 1.1  cli command "enable"
+ action 1.2  cli command "conf t"
+ action 1.3  cli command "interface range gi0/0-5"
+ action 1.4  cli command "no shut"
+ action 1.5  syslog msg "End of EEM"
+ action 1.6 end
+!
+end
+
+ISP4(config)#end
+ISP4#
+
+
+||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||CONNECTING TO 172.20.1.1||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+configure terminal
+Enter configuration commands, one per line.  End with CNTL/Z.
+R1(config)#do sh run
+Building configuration...
+
+  
+Current configuration : 6160 bytes
+!
+! Last configuration change at 23:56:25 UTC Thu Oct 7 2021 by dudu
+!
+version 15.6
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname R1
+!
+boot-start-marker
+boot-end-marker
+!
+!
+vrf definition ISP
+ rd 10:10
+ route-target export 10:10
+ route-target import 10:10
+ !
+ address-family ipv4
+ exit-address-family
+!
+vrf definition MGMT
+ rd 55:55
+ !
+ address-family ipv4
+ exit-address-family
+!
+!
+no aaa new-model
+ethernet lmi ce
+!
+!
+!
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+no ip domain lookup
+ip domain name dududaddy.edu
+ip cef
+ipv6 unicast-routing
+ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+username dudu privilege 15 secret 5 $1$GxZZ$52avv.cbKWmE8vxKFNpnu0
+!
+redundancy
+!
+!
+track 11 ip sla 11 reachability
+ delay down 8 up 10
+!
+! 
+crypto keyring BRANCHES-KEYRING vrf ISP 
+  pre-shared-key address 192.168.200.0 255.255.255.0 key BRANCH-GR3
+!
+!
+!
+!
+crypto isakmp policy 1
+ encr aes 256
+ authentication pre-share
+ group 5
+crypto isakmp profile BRANCHES-ISAKMP
+   keyring BRANCHES-KEYRING
+   match identity address 192.168.200.0 255.255.255.0 ISP
+   local-address 192.168.200.2 ISP
+!
+!
+crypto ipsec transform-set ESP-AES256-SHA1 esp-aes 256 esp-sha-hmac 
+ mode transport
+!
+crypto ipsec profile IPSEC-BRANCHES
+ set transform-set ESP-AES256-SHA1 
+ set isakmp-profile BRANCHES-ISAKMP
+!
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ vrf forwarding MGMT
+ ip address 172.20.1.1 255.255.255.255
+!
+interface Tunnel101
+ ip address 10.50.0.2 255.255.255.252
+ ip mtu 1400
+ ip tcp adjust-mss 1360
+ tunnel source 192.168.200.2
+ tunnel destination 192.168.200.101
+ tunnel vrf ISP
+ tunnel protection ipsec profile IPSEC-BRANCHES
+!
+interface Tunnel201
+ ip address 10.50.0.10 255.255.255.252
+ ip mtu 1400
+ ip tcp adjust-mss 1360
+ tunnel source 192.168.200.2
+ tunnel destination 192.168.200.102
+ tunnel vrf ISP
+ tunnel protection ipsec profile IPSEC-BRANCHES
+!
+interface GigabitEthernet0/0
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/0.100
+ encapsulation dot1Q 100
+ ip address 10.100.1.2 255.255.255.0
+ ip nat inside
+ ip virtual-reassembly in
+ glbp 10 ip 10.100.1.1
+ glbp 10 priority 110
+ glbp 10 preempt
+ glbp 10 authentication md5 key-string glbp
+!
+interface GigabitEthernet0/0.200
+ description ===Branches===
+ encapsulation dot1Q 200
+ vrf forwarding ISP
+ ip address 192.168.200.2 255.255.255.248
+!
+interface GigabitEthernet0/0.354
+ encapsulation dot1Q 354
+ vrf forwarding MGMT
+ ip address 192.168.254.2 255.255.255.248
+!
+interface GigabitEthernet0/1
+ ip address dhcp
+ ip nat outside
+ ip virtual-reassembly in
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/2
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/3
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+!
+router eigrp 100
+ network 10.50.0.0 0.0.0.255
+ network 10.100.0.0 0.0.255.255
+!
+router ospf 200 vrf MGMT
+ capability vrf-lite
+ area 1 stub
+ network 172.20.1.1 0.0.0.0 area 1
+ network 192.168.254.0 0.0.0.7 area 1
+!
+router bgp 2000
+ bgp log-neighbor-changes
+ !
+ address-family ipv4 vrf ISP
+  neighbor 192.168.200.1 remote-as 3000
+  neighbor 192.168.200.1 activate
+  neighbor 192.168.200.3 remote-as 2000
+  neighbor 192.168.200.3 activate
+ exit-address-family
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+ip nat inside source list NAT-NET1 interface GigabitEthernet0/1 overload
+ip route 0.0.0.0 0.0.0.0 192.168.2.1
+!
+ip access-list standard NAT-NET1
+ permit 10.100.1.0 0.0.0.255 log
+!
+ip sla 11
+ icmp-echo 4.4.4.4 source-interface GigabitEthernet0/0
+ip sla schedule 11 life forever start-time now
+ip sla reaction-configuration 11 react timeout threshold-type immediate
+ip sla enable reaction-alerts
+!
+!
+!
+control-plane
+!
+banner exec ^CC
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner incoming ^CC
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner login ^CC
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+!
+line con 0
+line aux 0
+line vty 0 4
+ login local
+ transport input all
+line vty 5 15
+ login local
+ transport input all
+!
+no scheduler allocate
+event manager applet shut_int
+ event ipsla operation-id 11 reaction-type timeout
+ action 1.0 if $_ipsla_condition eq "Occurred"
+ action 1.1  cli command "enable"
+ action 1.2  cli command "conf t"
+ action 1.3  cli command "interface range gi0/0-3"
+ action 1.4  cli command "no shut"
+ action 1.5  syslog msg "End of EEM"
+ action 1.6 end
+!
+end
+
+R1(config)#end
+R1#
+
+
+||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||CONNECTING TO 172.20.2.2||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+configure terminal
+Enter configuration commands, one per line.  End with CNTL/Z.
+R2(config)#do sh run
+Building configuration...
+
+  
+Current configuration : 6135 bytes
+!
+! Last configuration change at 23:56:33 UTC Thu Oct 7 2021 by dudu
+!
+version 15.6
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname R2
+!
+boot-start-marker
+boot-end-marker
+!
+!
+vrf definition ISP
+ rd 10:10
+ route-target export 10:10
+ route-target import 10:10
+ !
+ address-family ipv4
+ exit-address-family
+!
+vrf definition MGMT
+ rd 55:55
+ !
+ address-family ipv4
+ exit-address-family
+!
+!
+no aaa new-model
+ethernet lmi ce
+!
+!
+!
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+no ip domain lookup
+ip domain name dududaddy.edu
+ip cef
+ipv6 unicast-routing
+ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+username dudu privilege 15 secret 5 $1$00sX$3n7V3uOdJ7NYlpO0txZXE1
+!
+redundancy
+!
+!
+track 11 ip sla 11 reachability
+ delay down 8 up 10
+!
+! 
+crypto keyring BRANCHES-KEYRING vrf ISP 
+  pre-shared-key address 192.168.200.0 255.255.255.0 key BRANCH-GR3
+!
+!
+!
+!
+crypto isakmp policy 1
+ encr aes 256
+ authentication pre-share
+ group 5
+crypto isakmp profile BRANCHES-ISAKMP
+   keyring BRANCHES-KEYRING
+   match identity address 192.168.200.0 255.255.255.0 ISP
+   local-address 192.168.200.3 ISP
+!
+!
+crypto ipsec transform-set ESP-AES256-SHA1 esp-aes 256 esp-sha-hmac 
+ mode transport
+!
+crypto ipsec profile IPSEC-BRANCHES
+ set transform-set ESP-AES256-SHA1 
+ set isakmp-profile BRANCHES-ISAKMP
+!
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ vrf forwarding MGMT
+ ip address 172.20.2.2 255.255.255.255
+!
+interface Tunnel102
+ ip address 10.50.0.6 255.255.255.252
+ ip mtu 1400
+ ip tcp adjust-mss 1360
+ tunnel source 192.168.200.3
+ tunnel destination 192.168.200.101
+ tunnel vrf ISP
+ tunnel protection ipsec profile IPSEC-BRANCHES
+!
+interface Tunnel202
+ ip address 10.50.0.14 255.255.255.252
+ ip mtu 1400
+ ip tcp adjust-mss 1360
+ tunnel source 192.168.200.3
+ tunnel destination 192.168.200.102
+ tunnel vrf ISP
+ tunnel protection ipsec profile IPSEC-BRANCHES
+!
+interface GigabitEthernet0/0
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/0.100
+ encapsulation dot1Q 100
+ ip address 10.100.1.3 255.255.255.0
+ ip nat inside
+ ip virtual-reassembly in
+ glbp 10 ip 10.100.1.1
+ glbp 10 preempt
+ glbp 10 authentication md5 key-string glbp
+!
+interface GigabitEthernet0/0.200
+ description ===Branches===
+ encapsulation dot1Q 200
+ vrf forwarding ISP
+ ip address 192.168.200.3 255.255.255.248
+!
+interface GigabitEthernet0/0.354
+ encapsulation dot1Q 354
+ vrf forwarding MGMT
+ ip address 192.168.254.3 255.255.255.248
+!
+interface GigabitEthernet0/1
+ ip address dhcp
+ ip nat outside
+ ip virtual-reassembly in
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/2
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/3
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+!
+router eigrp 100
+ network 10.50.0.0 0.0.0.255
+ network 10.100.0.0 0.0.255.255
+!
+router ospf 200 vrf MGMT
+ capability vrf-lite
+ area 1 stub
+ network 172.20.2.2 0.0.0.0 area 1
+ network 192.168.254.0 0.0.0.7 area 1
+!
+router bgp 2000
+ bgp log-neighbor-changes
+ !
+ address-family ipv4 vrf ISP
+  neighbor 192.168.200.1 remote-as 3000
+  neighbor 192.168.200.1 activate
+  neighbor 192.168.200.2 remote-as 2000
+  neighbor 192.168.200.2 activate
+ exit-address-family
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+ip nat inside source list NAT-NET1 interface GigabitEthernet0/1 overload
+ip route 0.0.0.0 0.0.0.0 192.168.2.1
+!
+ip access-list standard NAT-NET1
+ permit 10.100.1.0 0.0.0.255 log
+!
+ip sla 11
+ icmp-echo 4.4.4.4 source-interface GigabitEthernet0/0
+ip sla schedule 11 life forever start-time now
+ip sla reaction-configuration 11 react timeout threshold-type immediate
+ip sla enable reaction-alerts
+!
+!
+!
+control-plane
+!
+banner exec ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner incoming ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner login ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+!
+line con 0
+line aux 0
+line vty 0 4
+ login local
+ transport input all
+line vty 5 15
+ login local
+ transport input all
+!
+no scheduler allocate
+event manager applet shut_int
+ event ipsla operation-id 11 reaction-type timeout
+ action 1.0 if $_ipsla_condition eq "Occurred"
+ action 1.1  cli command "enable"
+ action 1.2  cli command "conf t"
+ action 1.3  cli command "interface range gi0/0-3"
+ action 1.4  cli command "no shut"
+ action 1.5  syslog msg "End of EEM"
+ action 1.6 end
+!
+end
+
+R2(config)#end
+R2#
+
+
+||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||CONNECTING TO 172.20.3.3||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+configure terminal
+Enter configuration commands, one per line.  End with CNTL/Z.
+R3(config)#do sh run
+Building configuration...
+
+  
+Current configuration : 5854 bytes
+!
+! Last configuration change at 23:59:43 UTC Thu Oct 7 2021 by dudu
+!
+version 15.6
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname R3
+!
+boot-start-marker
+boot-end-marker
+!
+!
+vrf definition ISP
+ rd 10:10
+ route-target export 10:10
+ route-target import 10:10
+ !
+ address-family ipv4
+ exit-address-family
+!
+vrf definition MGMT
+ rd 55:55
+ !
+ address-family ipv4
+ exit-address-family
+!
+!
+no aaa new-model
+ethernet lmi ce
+!
+!
+!
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+no ip domain lookup
+ip domain name dududaddy.edu
+ip cef
+no ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+username dudu privilege 15 secret 5 $1$3l.3$atSd2rAWs4FFqTwdx/p0H0
+!
+redundancy
+!
+!
+track 11 ip sla 11 reachability
+ delay down 8 up 10
+!
+! 
+crypto keyring BRANCHES-KEYRING vrf ISP 
+  pre-shared-key address 192.168.200.0 255.255.255.0 key BRANCH-GR3
+!
+!
+!
+!
+crypto isakmp policy 1
+ encr aes 256
+ authentication pre-share
+ group 5
+crypto isakmp profile BRANCHES-ISAKMP
+   keyring BRANCHES-KEYRING
+   match identity address 192.168.200.0 255.255.255.0 ISP
+   local-address 192.168.200.10 ISP
+!
+!
+crypto ipsec transform-set ESP-AES256-SHA1 esp-aes 256 esp-sha-hmac 
+ mode transport
+!
+crypto ipsec profile IPSEC-BRANCHES
+ set transform-set ESP-AES256-SHA1 
+ set isakmp-profile BRANCHES-ISAKMP
+!
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ vrf forwarding MGMT
+ ip address 172.20.3.3 255.255.255.255
+!
+interface Tunnel103
+ ip address 10.50.0.18 255.255.255.252
+ ip mtu 1400
+ ip tcp adjust-mss 1360
+ tunnel source 192.168.200.10
+ tunnel destination 192.168.200.101
+ tunnel vrf ISP
+ tunnel protection ipsec profile IPSEC-BRANCHES
+!
+interface Tunnel203
+ ip address 10.50.0.22 255.255.255.252
+ ip mtu 1400
+ ip tcp adjust-mss 1360
+ tunnel source 192.168.200.10
+ tunnel destination 192.168.200.102
+ tunnel vrf ISP
+ tunnel protection ipsec profile IPSEC-BRANCHES
+!
+interface GigabitEthernet0/0
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/0.100
+ encapsulation dot1Q 100
+ ip address 10.100.2.1 255.255.255.0
+!
+interface GigabitEthernet0/0.200
+ encapsulation dot1Q 200
+ vrf forwarding ISP
+ ip address 192.168.200.10 255.255.255.252
+!
+interface GigabitEthernet0/0.354
+ encapsulation dot1Q 354
+ vrf forwarding MGMT
+ ip address 192.168.254.26 255.255.255.252
+!
+interface GigabitEthernet0/1
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/2
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/3
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/4
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/5
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+!
+router eigrp 100
+ network 10.50.0.0 0.0.0.255
+ network 10.100.0.0 0.0.255.255
+!
+router ospf 200 vrf MGMT
+ capability vrf-lite
+ area 2 stub
+ network 172.20.3.3 0.0.0.0 area 2
+ network 192.168.254.24 0.0.0.3 area 2
+!
+router bgp 2000
+ bgp log-neighbor-changes
+ !
+ address-family ipv4 vrf ISP
+  neighbor 192.168.200.9 remote-as 3000
+  neighbor 192.168.200.9 activate
+ exit-address-family
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+!
+ip sla 11
+ icmp-echo 4.4.4.4 source-interface GigabitEthernet0/0
+ip sla schedule 11 life forever start-time now
+ip sla reaction-configuration 11 react timeout threshold-type immediate
+ip sla enable reaction-alerts
+!
+!
+!
+control-plane
+!
+banner exec ^CC
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner incoming ^CC
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner login ^CC
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+!
+line con 0
+line aux 0
+line vty 0 4
+ login local
+ transport input all
+line vty 5 15
+ login local
+ transport input all
+!
+no scheduler allocate
+event manager applet shut_int
+ event ipsla operation-id 11 reaction-type timeout
+ action 1.0 if $_ipsla_condition eq "Occurred"
+ action 1.1  cli command "enable"
+ action 1.2  cli command "conf t"
+ action 1.3  cli command "interface range gi0/0-5"
+ action 1.4  cli command "no shut"
+ action 1.5  syslog msg "End of EEM"
+ action 1.6 end
+!
+end
+
+R3(config)#end
+R3#
+
+
+||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||CONNECTING TO 172.20.4.4||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+configure terminal
+Enter configuration commands, one per line.  End with CNTL/Z.
+R4(config)#do sh run
+Building configuration...
+
+  
+Current configuration : 6626 bytes
+!
+! Last configuration change at 23:59:42 UTC Thu Oct 7 2021 by dudu
+!
+version 15.6
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname R4
+!
+boot-start-marker
+boot-end-marker
+!
+!
+vrf definition ISP
+ rd 10:10
+ route-target export 10:10
+ route-target import 10:10
+ !
+ address-family ipv4
+ exit-address-family
+!
+vrf definition MGMT
+ rd 55:55
+ !
+ address-family ipv4
+ exit-address-family
+!
+!
+no aaa new-model
+ethernet lmi ce
+!
+!
+!
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+no ip domain lookup
+ip domain name dududaddy.edu
+ip cef
+no ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+username dudu privilege 15 secret 5 $1$PALx$3ci6eDnLM.3dVKTKm9yh51
+!
+redundancy
+!
+!
+track 11 ip sla 11 reachability
+ delay down 8 up 10
+!
+! 
+crypto keyring BRANCHES-KEYRING vrf ISP 
+  pre-shared-key address 192.168.200.0 255.255.255.0 key BRANCH-GR3
+!
+!
+!
+!
+crypto isakmp policy 1
+ encr aes 256
+ authentication pre-share
+ group 5
+crypto isakmp profile BRANCHES-ISAKMP
+   keyring BRANCHES-KEYRING
+   match identity address 192.168.200.0 255.255.255.0 ISP
+   local-address 192.168.200.101 ISP
+!
+!
+crypto ipsec transform-set ESP-AES256-SHA1 esp-aes 256 esp-sha-hmac 
+ mode transport
+!
+crypto ipsec profile IPSEC-BRANCHES
+ set transform-set ESP-AES256-SHA1 
+ set isakmp-profile BRANCHES-ISAKMP
+!
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ vrf forwarding MGMT
+ ip address 172.20.4.4 255.255.255.255
+!
+interface Tunnel101
+ ip address 10.50.0.1 255.255.255.252
+ ip mtu 1400
+ ip tcp adjust-mss 1360
+ tunnel source 192.168.200.101
+ tunnel destination 192.168.200.2
+ tunnel vrf ISP
+ tunnel protection ipsec profile IPSEC-BRANCHES
+!
+interface Tunnel102
+ ip address 10.50.0.5 255.255.255.252
+ ip mtu 1400
+ ip tcp adjust-mss 1360
+ tunnel source 192.168.200.101
+ tunnel destination 192.168.200.3
+ tunnel vrf ISP
+ tunnel protection ipsec profile IPSEC-BRANCHES
+!
+interface Tunnel103
+ ip address 10.50.0.17 255.255.255.252
+ ip mtu 1400
+ ip tcp adjust-mss 1360
+ tunnel source 192.168.200.101
+ tunnel destination 192.168.200.10
+ tunnel vrf ISP
+ tunnel protection ipsec profile IPSEC-BRANCHES
+!
+interface GigabitEthernet0/0
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/0.51
+ encapsulation dot1Q 51
+ vrf forwarding MGMT
+ ip address 192.168.51.1 255.255.255.248
+!
+interface GigabitEthernet0/0.100
+ encapsulation dot1Q 100
+ ip address 10.100.100.1 255.255.255.0
+ vrrp 10 ip 10.100.100.1
+ vrrp 10 priority 110
+ vrrp 10 authentication md5 key-string VRRP
+!
+interface GigabitEthernet0/0.200
+ description ===Branches===
+ encapsulation dot1Q 200
+ vrf forwarding ISP
+ ip address 192.168.200.101 255.255.255.248
+!
+interface GigabitEthernet0/0.354
+ encapsulation dot1Q 354
+ vrf forwarding MGMT
+ ip address 192.168.254.10 255.255.255.248
+!
+interface GigabitEthernet0/1
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/2
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/3
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/4
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/5
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+!
+router eigrp 100
+ network 10.50.0.0 0.0.0.255
+ network 10.100.0.0 0.0.255.255
+!
+!
+router eigrp 51
+ !
+ address-family ipv4 vrf MGMT autonomous-system 51
+  redistribute ospf 200 metric 1 1 1 1 1
+  network 192.168.51.0 0.0.0.7
+ exit-address-family
+!
+router ospf 200 vrf MGMT
+ capability vrf-lite
+ area 51 nssa
+ redistribute eigrp 51 subnets
+ network 172.20.4.4 0.0.0.0 area 51
+ network 192.168.254.8 0.0.0.7 area 51
+!
+router bgp 2000
+ bgp router-id 172.20.4.4
+ bgp log-neighbor-changes
+ !
+ address-family ipv4 vrf ISP
+  neighbor 192.168.200.100 remote-as 3000
+  neighbor 192.168.200.100 activate
+  neighbor 192.168.200.102 remote-as 2000
+  neighbor 192.168.200.102 activate
+ exit-address-family
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+!
+ip sla 11
+ icmp-echo 4.4.4.4 source-interface GigabitEthernet0/0
+ip sla schedule 11 life forever start-time now
+ip sla reaction-configuration 11 react timeout threshold-type immediate
+ip sla enable reaction-alerts
+!
+!
+!
+control-plane
+!
+banner exec ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner incoming ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner login ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+!
+line con 0
+line aux 0
+line vty 0 4
+ login local
+ transport input all
+line vty 5 15
+ login local
+ transport input all
+!
+no scheduler allocate
+event manager applet shut_int
+ event ipsla operation-id 11 reaction-type timeout
+ action 1.0 if $_ipsla_condition eq "Occurred"
+ action 1.1  cli command "enable"
+ action 1.2  cli command "conf t"
+ action 1.3  cli command "interface range gi0/0-5"
+ action 1.4  cli command "no shut"
+ action 1.5  syslog msg "End of EEM"
+ action 1.6 end
+!
+end
+
+R4(config)#end
+R4#
+
+
+||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||CONNECTING TO 172.20.5.5||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+configure terminal
+Enter configuration commands, one per line.  End with CNTL/Z.
+R5(config)#do sh run
+Building configuration...
+
+  
+Current configuration : 6533 bytes
+!
+! Last configuration change at 23:59:41 UTC Thu Oct 7 2021 by dudu
+!
+version 15.6
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname R5
+!
+boot-start-marker
+boot-end-marker
+!
+!
+vrf definition ISP
+ rd 10:10
+ route-target export 10:10
+ route-target import 10:10
+ !
+ address-family ipv4
+ exit-address-family
+!
+vrf definition MGMT
+ rd 55:55
+ !
+ address-family ipv4
+ exit-address-family
+!
+!
+no aaa new-model
+ethernet lmi ce
+!
+!
+!
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+no ip domain lookup
+ip domain name dududaddy.edu
+ip cef
+no ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+username dudu privilege 15 secret 5 $1$2C1l$DHh/ZZ9251j/Var3rP4oD.
+!
+redundancy
+!
+!
+track 11 ip sla 11 reachability
+ delay down 8 up 10
+!
+! 
+crypto keyring BRANCHES-KEYRING vrf ISP 
+  pre-shared-key address 192.168.200.0 255.255.255.0 key BRANCH-GR3
+!
+!
+!
+!
+crypto isakmp policy 1
+ encr aes 256
+ authentication pre-share
+ group 5
+crypto isakmp profile BRANCHES-ISAKMP
+   keyring BRANCHES-KEYRING
+   match identity address 192.168.200.0 255.255.255.0 ISP
+   local-address 192.168.200.102 ISP
+!
+!
+crypto ipsec transform-set ESP-AES256-SHA1 esp-aes 256 esp-sha-hmac 
+ mode transport
+!
+crypto ipsec profile IPSEC-BRANCHES
+ set transform-set ESP-AES256-SHA1 
+ set isakmp-profile BRANCHES-ISAKMP
+!
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ vrf forwarding MGMT
+ ip address 172.20.5.5 255.255.255.255
+!
+interface Tunnel201
+ ip address 10.50.0.9 255.255.255.252
+ ip mtu 1400
+ ip tcp adjust-mss 1360
+ tunnel source 192.168.200.102
+ tunnel destination 192.168.200.2
+ tunnel vrf ISP
+ tunnel protection ipsec profile IPSEC-BRANCHES
+!
+interface Tunnel202
+ ip address 10.50.0.13 255.255.255.252
+ ip mtu 1400
+ ip tcp adjust-mss 1360
+ tunnel source 192.168.200.102
+ tunnel destination 192.168.200.3
+ tunnel vrf ISP
+ tunnel protection ipsec profile IPSEC-BRANCHES
+!
+interface Tunnel203
+ ip address 10.50.0.21 255.255.255.252
+ ip mtu 1400
+ ip tcp adjust-mss 1360
+ tunnel source 192.168.200.102
+ tunnel destination 192.168.200.10
+ tunnel vrf ISP
+ tunnel protection ipsec profile IPSEC-BRANCHES
+!
+interface GigabitEthernet0/0
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/0.51
+ encapsulation dot1Q 51
+ vrf forwarding MGMT
+ ip address 192.168.51.2 255.255.255.248
+!
+interface GigabitEthernet0/0.100
+ encapsulation dot1Q 100
+ ip address 10.100.100.2 255.255.255.0
+ vrrp 10 ip 10.100.100.1
+ vrrp 10 authentication md5 key-string VRRP
+!
+interface GigabitEthernet0/0.200
+ description ===Branches===
+ encapsulation dot1Q 200
+ vrf forwarding ISP
+ ip address 192.168.200.102 255.255.255.248
+!
+interface GigabitEthernet0/0.354
+ encapsulation dot1Q 354
+ vrf forwarding MGMT
+ ip address 192.168.254.11 255.255.255.248
+!
+interface GigabitEthernet0/1
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/2
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/3
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/4
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/5
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+!
+router eigrp 100
+ network 10.50.0.0 0.0.0.255
+ network 10.100.0.0 0.0.255.255
+!
+!
+router eigrp 51
+ !
+ address-family ipv4 vrf MGMT autonomous-system 51
+  network 192.168.51.0 0.0.0.7
+ exit-address-family
+!
+router ospf 200 vrf MGMT
+ capability vrf-lite
+ area 51 nssa
+ network 172.20.5.5 0.0.0.0 area 51
+ network 192.168.254.8 0.0.0.7 area 51
+!
+router bgp 2000
+ bgp router-id 172.20.5.5
+ bgp log-neighbor-changes
+ !
+ address-family ipv4 vrf ISP
+  neighbor 192.168.200.100 remote-as 3000
+  neighbor 192.168.200.100 activate
+  neighbor 192.168.200.101 remote-as 2000
+  neighbor 192.168.200.101 activate
+ exit-address-family
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+!
+ip sla 11
+ icmp-echo 4.4.4.4 source-interface GigabitEthernet0/0
+ip sla schedule 11 life forever start-time now
+ip sla reaction-configuration 11 react timeout threshold-type immediate
+ip sla enable reaction-alerts
+!
+!
+!
+control-plane
+!
+banner exec ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner incoming ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner login ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+!
+line con 0
+line aux 0
+line vty 0 4
+ login local
+ transport input all
+line vty 5 15
+ login local
+ transport input all
+!
+no scheduler allocate
+event manager applet shut_int
+ event ipsla operation-id 11 reaction-type timeout
+ action 1.0 if $_ipsla_condition eq "Occurred"
+ action 1.1  cli command "enable"
+ action 1.2  cli command "conf t"
+ action 1.3  cli command "interface range gi0/0-5"
+ action 1.4  cli command "no shut"
+ action 1.5  syslog msg "End of EEM"
+ action 1.6 end
+!
+end
+
+R5(config)#end
+R5#
+
+
+||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||CONNECTING TO 172.20.6.6||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+configure terminal
+Enter configuration commands, one per line.  End with CNTL/Z.
+R6(config)#do sh run
+Building configuration...
+
+  
+Current configuration : 4474 bytes
+!
+! Last configuration change at 23:59:44 UTC Thu Oct 7 2021 by dudu
+!
+version 15.6
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname R6
+!
+boot-start-marker
+boot-end-marker
+!
+!
+vrf definition MGMT
+ rd 55:55
+ !
+ address-family ipv4
+ exit-address-family
+!
+!
+no aaa new-model
+ethernet lmi ce
+!
+!
+!
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+ip domain name dududaddy.edu
+ip cef
+no ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+username dudu privilege 15 secret 5 $1$DWLU$Fvw4k8wqOjyZdukxkoV1M.
+!
+redundancy
+!
+!
+track 11 ip sla 11 reachability
+ delay down 8 up 10
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ vrf forwarding MGMT
+ ip address 172.20.6.6 255.255.255.255
+!
+interface GigabitEthernet0/0
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/0.100
+ encapsulation dot1Q 100
+ ip address 10.50.100.2 255.255.255.0
+ standby 10 ip 10.50.100.1
+ standby 10 priority 120
+ standby 10 preempt delay minimum 10
+ standby 10 authentication md5 key-string HSRP
+!
+interface GigabitEthernet0/0.354
+ encapsulation dot1Q 354
+ vrf forwarding MGMT
+ ip address 192.168.254.18 255.255.255.248
+!
+interface GigabitEthernet0/1
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/2
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/3
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/4
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/5
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+router ospf 200 vrf MGMT
+ capability vrf-lite
+ area 102 nssa
+ network 172.20.6.6 0.0.0.0 area 102
+ network 192.168.254.16 0.0.0.7 area 102
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+!
+ip sla 11
+ icmp-echo 4.4.4.4 source-interface GigabitEthernet0/0
+ip sla schedule 11 life forever start-time now
+ip sla reaction-configuration 11 react timeout threshold-type immediate
+ip sla enable reaction-alerts
+!
+!
+!
+control-plane
+!
+banner exec ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner incoming ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner login ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+!
+line con 0
+line aux 0
+line vty 0 4
+ login local
+ transport input all
+line vty 5 15
+ login local
+ transport input all
+!
+no scheduler allocate
+event manager applet shut_int
+ event ipsla operation-id 11 reaction-type timeout
+ action 1.0 if $_ipsla_condition eq "Occurred"
+ action 1.1  cli command "enable"
+ action 1.2  cli command "conf t"
+ action 1.3  cli command "interface range gi0/0-5"
+ action 1.4  cli command "no shut"
+ action 1.5  syslog msg "End of EEM"
+ action 1.6 end
+!
+end
+
+R6(config)#end
+R6#
+
+
+||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||CONNECTING TO 172.20.7.7||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+configure terminal
+Enter configuration commands, one per line.  End with CNTL/Z.
+R7(config)#do sh run
+Building configuration...
+
+  
+Current configuration : 4474 bytes
+!
+! Last configuration change at 23:59:47 UTC Thu Oct 7 2021 by dudu
+!
+version 15.6
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname R7
+!
+boot-start-marker
+boot-end-marker
+!
+!
+vrf definition MGMT
+ rd 55:55
+ !
+ address-family ipv4
+ exit-address-family
+!
+!
+no aaa new-model
+ethernet lmi ce
+!
+!
+!
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+ip domain name dududaddy.edu
+ip cef
+no ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+username dudu privilege 15 secret 5 $1$cOeu$QehxiIL9pPphJAi/qfGM8/
+!
+redundancy
+!
+!
+track 11 ip sla 11 reachability
+ delay down 8 up 10
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ vrf forwarding MGMT
+ ip address 172.20.7.7 255.255.255.255
+!
+interface GigabitEthernet0/0
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/0.100
+ encapsulation dot1Q 100
+ ip address 10.50.100.3 255.255.255.0
+ standby 10 ip 10.50.100.1
+ standby 10 priority 125
+ standby 10 preempt delay minimum 20
+ standby 10 authentication md5 key-string HSRP
+!
+interface GigabitEthernet0/0.354
+ encapsulation dot1Q 354
+ vrf forwarding MGMT
+ ip address 192.168.254.19 255.255.255.248
+!
+interface GigabitEthernet0/1
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/2
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/3
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/4
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/5
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+router ospf 200 vrf MGMT
+ capability vrf-lite
+ area 102 nssa
+ network 172.20.7.7 0.0.0.0 area 102
+ network 192.168.254.16 0.0.0.7 area 102
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+!
+ip sla 11
+ icmp-echo 4.4.4.4 source-interface GigabitEthernet0/0
+ip sla schedule 11 life forever start-time now
+ip sla reaction-configuration 11 react timeout threshold-type immediate
+ip sla enable reaction-alerts
+!
+!
+!
+control-plane
+!
+banner exec ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner incoming ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner login ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+!
+line con 0
+line aux 0
+line vty 0 4
+ login local
+ transport input all
+line vty 5 15
+ login local
+ transport input all
+!
+no scheduler allocate
+event manager applet shut_int
+ event ipsla operation-id 11 reaction-type timeout
+ action 1.0 if $_ipsla_condition eq "Occurred"
+ action 1.1  cli command "enable"
+ action 1.2  cli command "conf t"
+ action 1.3  cli command "interface range gi0/0-5"
+ action 1.4  cli command "no shut"
+ action 1.5  syslog msg "End of EEM"
+ action 1.6 end
+!
+end
+
+R7(config)#end
+R7#
+
+
+||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||CONNECTING TO 172.20.51.51||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+configure terminal
+Enter configuration commands, one per line.  End with CNTL/Z.
+R51(config)#do sh run
+Building configuration...
+
+  
+Current configuration : 4244 bytes
+!
+! Last configuration change at 23:59:59 UTC Thu Oct 7 2021 by dudu
+!
+version 15.6
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname R51
+!
+boot-start-marker
+boot-end-marker
+!
+!
+vrf definition MGMT
+ rd 55:55
+ !
+ address-family ipv4
+ exit-address-family
+!
+!
+no aaa new-model
+ethernet lmi ce
+!
+!
+!
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+no ip domain lookup
+ip domain name dududaddy.edu
+ip cef
+no ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+username dudu privilege 15 secret 5 $1$BKiJ$QpSVY6793UoEQcVnuq0Do.
+!
+redundancy
+!
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ vrf forwarding MGMT
+ ip address 172.20.51.51 255.255.255.255
+!
+interface GigabitEthernet0/0
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/0.51
+ encapsulation dot1Q 51
+ vrf forwarding MGMT
+ ip address 192.168.51.3 255.255.255.248
+!
+interface GigabitEthernet0/1
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/2
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/3
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/4
+ no ip address
+ shutdown
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/5
+ no ip address
+ shutdown
+ duplex auto
+ speed auto
+ media-type rj45
+!
+!
+router eigrp 51
+ !
+ address-family ipv4 vrf MGMT autonomous-system 51
+  network 172.20.51.51 0.0.0.0
+  network 192.168.51.0 0.0.0.7
+ exit-address-family
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+!
+ip sla 11
+ icmp-echo 4.4.4.4 source-interface GigabitEthernet0/0
+ip sla schedule 11 life forever start-time now
+ip sla reaction-configuration 11 react timeout threshold-type immediate
+ip sla enable reaction-alerts
+!
+!
+!
+control-plane
+!
+banner exec ^CC
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner incoming ^CC
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner login ^CC
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+!
+line con 0
+line aux 0
+line vty 0 4
+ login local
+ transport input all
+line vty 5 15
+ login local
+ transport input all
+!
+no scheduler allocate
+event manager applet shut_int
+ event ipsla operation-id 11 reaction-type timeout
+ action 1.0 if $_ipsla_condition eq "Occurred"
+ action 1.1  cli command "enable"
+ action 1.2  cli command "conf t"
+ action 1.3  cli command "interface range gi0/0-3"
+ action 1.4  cli command "no shut"
+ action 1.5  syslog msg "End of EEM"
+ action 1.6 end
+!
+end
+
+R51(config)#end
+R51#
+
+
+
+Process finished with exit code 0

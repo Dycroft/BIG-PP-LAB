@@ -1,0 +1,245 @@
+!
+version 15.6
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname R2
+!
+boot-start-marker
+boot-end-marker
+!
+!
+vrf definition ISP
+ rd 10:10
+ route-target export 10:10
+ route-target import 10:10
+ !
+ address-family ipv4
+ exit-address-family
+!
+!
+no aaa new-model
+ethernet lmi ce
+!
+!
+!
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+no ip domain lookup
+ip cef
+no ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+!
+redundancy
+!
+!
+track 11 ip sla 11 reachability
+ delay down 8 up 10
+!
+! 
+crypto keyring BRANCHES-KEYRING vrf ISP 
+  pre-shared-key address 192.168.200.10 key BRANCH-GR3
+  pre-shared-key address 192.168.200.101 key BRANCH-GR3
+  pre-shared-key address 192.168.200.102 key BRANCH-GR3
+!
+!
+!
+!
+crypto isakmp policy 1
+ encr aes 256
+ authentication pre-share
+ group 5
+crypto isakmp profile BRANCHES-ISAKMP
+   keyring BRANCHES-KEYRING
+   match identity address 192.168.200.10 255.255.255.255 ISP
+   match identity address 192.168.200.101 255.255.255.255 ISP
+   match identity address 192.168.200.102 255.255.255.255 ISP
+   local-address GigabitEthernet0/0.200
+!
+!
+crypto ipsec transform-set ESP-AES256-SHA1 esp-aes 256 esp-sha-hmac 
+ mode transport
+!
+crypto ipsec profile IPSEC-BRANCHES
+ set transform-set ESP-AES256-SHA1 
+ set isakmp-profile BRANCHES-ISAKMP
+!
+!
+!
+!
+!
+!
+!
+interface Tunnel202
+ no shutdown
+ ip address 10.50.0.5 255.255.255.252
+ tunnel source 192.168.200.3
+ tunnel destination 192.168.200.10
+ tunnel vrf ISP
+ tunnel protection ipsec profile IPSEC-BRANCHES
+!
+interface Tunnel2001
+ no shutdown
+ ip address 10.50.0.109 255.255.255.252
+ tunnel source 192.168.200.3
+ tunnel destination 192.168.200.101
+ tunnel vrf ISP
+ tunnel protection ipsec profile IPSEC-BRANCHES
+!
+interface Tunnel2002
+ no shutdown
+ ip address 10.50.0.113 255.255.255.252
+ tunnel source 192.168.200.3
+ tunnel destination 192.168.200.102
+ tunnel vrf ISP
+ tunnel protection ipsec profile IPSEC-BRANCHES
+!
+interface GigabitEthernet0/0
+ no shutdown
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/0.100
+ no shutdown
+ encapsulation dot1Q 100
+ ip address 10.100.1.3 255.255.255.0
+ ip nat inside
+ ip virtual-reassembly in
+ glbp 10 ip 10.100.1.1
+ glbp 10 preempt
+ glbp 10 authentication md5 key-string glbp
+!
+interface GigabitEthernet0/0.200
+ no shutdown
+ description ===Branches===
+ encapsulation dot1Q 200
+ vrf forwarding ISP
+ ip address 192.168.200.3 255.255.255.248
+!
+interface GigabitEthernet0/0.1000
+ no shutdown
+ description ====INTERNET====
+ encapsulation dot1Q 1000
+ ip address 192.168.2.52 255.255.255.0
+!
+interface GigabitEthernet0/1
+ no shutdown
+ ip address dhcp
+ ip nat outside
+ ip virtual-reassembly in
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/2
+ no shutdown
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/3
+ no shutdown
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+router bgp 2000
+ bgp log-neighbor-changes
+ !
+ address-family ipv4 vrf ISP
+  neighbor 192.168.200.1 remote-as 3000
+  neighbor 192.168.200.1 activate
+  neighbor 192.168.200.2 remote-as 2000
+  neighbor 192.168.200.2 activate
+ exit-address-family
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+ip nat inside source list NAT-NET1 interface GigabitEthernet0/1 overload
+ip route 0.0.0.0 0.0.0.0 192.168.2.1
+!
+ip access-list standard NAT-NET1
+ permit 10.100.1.0 0.0.0.255 log
+!
+ip sla 11
+ icmp-echo 4.4.4.4 source-interface GigabitEthernet0/0
+ip sla schedule 11 life forever start-time now
+ip sla reaction-configuration 11 react timeout threshold-type immediate
+ip sla enable reaction-alerts
+!
+!
+!
+control-plane
+!
+banner exec ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner incoming ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner login ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+!
+line con 0
+line aux 0
+line vty 0 4
+ login
+ transport input none
+!
+no scheduler allocate
+event manager applet shut_int
+ event ipsla operation-id 11 reaction-type timeout
+ action 1.0 if $_ipsla_condition eq "Occurred"
+ action 1.1  cli command "enable"
+ action 1.2  cli command "conf t"
+ action 1.3  cli command "interface range gi0/0-3"
+ action 1.4  cli command "no shut"
+ action 1.5  syslog msg "End of EEM"
+ action 1.6 end
+!
+end
